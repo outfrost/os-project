@@ -2,18 +2,22 @@
 #include <semaphore.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <time.h>
 #include <stdio.h>
 
 #include "environment.h"
 #include "supplier.h"
 #include "consumer.h"
+#include "profanities.h"
 
-void start_environment() {
+void start_environment(pthread_t* ui_thread) {
 	pthread_t suppliers[5];
 	pthread_t consumers[5];
 	
 	sem_init(&stored_goods, 0, 0u);
 	sem_init(&recycled_materials, 0, 5u);
+	
+	srand(time(NULL));
 	
 	for (int i = 0; i < 5; ++i) {
 		int* supplier_id = malloc(sizeof(int));
@@ -42,4 +46,16 @@ void start_environment() {
 			}
 		}
 	}
+	
+	int create_status = pthread_create(ui_thread, NULL, run_profanities, NULL);
+	if (create_status != 0) {
+		if (create_status == EAGAIN) {
+			fprintf(stderr, "Cannot start profanities: Cannot allocate resources for thread\n");
+		}
+		else if (create_status == EINVAL || create_status == EPERM) {
+			fprintf(stderr, "Cannot start profanities: Invalid or forbidden thread creation attributes\n");
+		}
+	}
+	
+	sem_post(&ui_update);
 }

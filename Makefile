@@ -1,6 +1,7 @@
 compileargs = -Wall -Wextra -Wpedantic
-linkargs = -pthread
-objects = out/main.o out/environment.o out/supplier.o out/consumer.o
+linkargs = -pthread -lncurses
+objects = out/main.o out/environment.o out/supplier.o out/consumer.o \
+		  out/profanities.o
 
 threading : $(objects) out
 	cc -o out/threading $(objects) $(linkargs)
@@ -19,6 +20,9 @@ out/supplier.o : supplier.c environment.h out
 
 out/consumer.o : consumer.c environment.h out
 	cc -c -o out/consumer.o consumer.c $(compileargs)
+
+out/profanities.o : profanities.c out
+	cc -c -o out/profanities.o profanities.c $(compileargs)
 
 out :
 	mkdir out/
