@@ -5,21 +5,19 @@
 #include <time.h>
 #include <stdio.h>
 
+#include "typedefs.h"
 #include "environment.h"
 #include "supplier.h"
 #include "consumer.h"
 #include "profanities.h"
 
 void start_environment(pthread_t* ui_thread) {
-	pthread_t suppliers[5];
-	pthread_t consumers[5];
-	
 	sem_init(&stored_goods, 0, 0u);
-	sem_init(&recycled_materials, 0, 5u);
+	sem_init(&recycled_materials, 0, INITIAL_ITEMS);
 	
-	srand(time(NULL));
+	srandom(time(NULL));
 	
-	for (int i = 0; i < 5; ++i) {
+	for (int i = 0; i < SUPPLIERS_COUNT; ++i) {
 		int* supplier_id = malloc(sizeof(int));
 		*supplier_id = i;
 		int create_status = pthread_create(&suppliers[i], NULL, supplier_run, (void*)supplier_id);
@@ -33,9 +31,9 @@ void start_environment(pthread_t* ui_thread) {
 		}
 	}
 	
-	for (int i = 0; i < 5; ++i) {
+	for (int i = 0; i < CONSUMERS_COUNT; ++i) {
 		int* consumer_id = malloc(sizeof(int));
-		*consumer_id = i + 20;
+		*consumer_id = i;
 		int create_status = pthread_create(&consumers[i], NULL, consumer_run, (void*)consumer_id);
 		if (create_status != 0) {
 			if (create_status == EAGAIN) {
@@ -47,7 +45,7 @@ void start_environment(pthread_t* ui_thread) {
 		}
 	}
 	
-	int create_status = pthread_create(ui_thread, NULL, run_profanities, NULL);
+	int create_status = pthread_create(ui_thread, NULL, profanities_run, NULL);
 	if (create_status != 0) {
 		if (create_status == EAGAIN) {
 			fprintf(stderr, "Cannot start profanities: Cannot allocate resources for thread\n");

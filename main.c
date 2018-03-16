@@ -1,6 +1,7 @@
 #include <pthread.h>
 #include <semaphore.h>
 
+#include "typedefs.h"
 #include "environment.h"
 
 int main(int argc, char** argv) {
