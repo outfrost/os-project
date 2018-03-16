@@ -18,6 +18,8 @@ static void randomize_proc_time(struct timespec* tspec) {
 
 void* supplier_run(void* arg) {
 	int id = *(int*)arg;
+	free(arg);
+	arg = NULL;
 	
 	struct timespec processing_time;
 	struct timespec interaction_time = { 1, 0 };
@@ -37,4 +39,8 @@ void* supplier_run(void* arg) {
 		nanosleep(&interaction_time, NULL);
 		sem_post(&stored_goods);
 	}
+	
+	int* result = malloc(sizeof(int));
+	*result = 0;
+	return (void*)result;
 }

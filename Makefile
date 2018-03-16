@@ -8,6 +8,7 @@ threading : $(objects) out/
 	cc -o out/threading $(objects) $(linkargs)
 
 run : threading
+	@echo
 	out/threading
 
 out/main.o : main.c environment.h typedefs.h out/

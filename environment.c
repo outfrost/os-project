@@ -14,6 +14,7 @@
 void start_environment(pthread_t* ui_thread) {
 	sem_init(&stored_goods, 0, 0u);
 	sem_init(&recycled_materials, 0, INITIAL_ITEMS);
+	sem_init(&ui_update, 0, 0u);
 	
 	srandom(time(NULL));
 	
@@ -29,6 +30,9 @@ void start_environment(pthread_t* ui_thread) {
 				fprintf(stderr, "Cannot spawn supplier %d: Invalid or forbidden thread creation attributes\n", i);
 			}
 		}
+		else {
+			printf("Supplier %d spawned\n", i);
+		}
 	}
 	
 	for (int i = 0; i < CONSUMERS_COUNT; ++i) {
@@ -43,6 +47,9 @@ void start_environment(pthread_t* ui_thread) {
 				fprintf(stderr, "Cannot spawn consumer %d: Invalid or forbidden thread creation attributes\n", i);
 			}
 		}
+		else {
+			printf("Consumer %d spawned\n", i);
+		}
 	}
 	
 	int create_status = pthread_create(ui_thread, NULL, profanities_run, NULL);
@@ -56,4 +63,43 @@ void start_environment(pthread_t* ui_thread) {
 	}
 	
 	sem_post(&ui_update);
+}
+
+void terminate_environment() {
+	for (int i = 0; i < SUPPLIERS_COUNT; ++i) {
+		pthread_cancel(suppliers[i]);
+	}
+	for (int i = 0; i < CONSUMERS_COUNT; ++i) {
+		pthread_cancel(consumers[i]);
+	}
+	
+	sem_destroy(&stored_goods);
+	sem_destroy(&recycled_materials);
+	sem_destroy(&ui_update);
+	
+	for (int i = 0; i < SUPPLIERS_COUNT; ++i) {
+		void* retval = NULL;
+		pthread_join(suppliers[i], &retval);
+		printf("Supplier %d terminated (", i);
+		if (retval == PTHREAD_CANCELED) {
+			printf("Thread canceled");
+		}
+		else {
+			printf("Exit status: %d", *(int*)retval);
+		}
+		printf(")\n");
+	}
+	
+	for (int i = 0; i < CONSUMERS_COUNT; ++i) {
+		void* retval = NULL;
+		pthread_join(consumers[i], &retval);
+		printf("Consumer %d terminated (", i);
+		if (retval == PTHREAD_CANCELED) {
+			printf("Thread canceled");
+		}
+		else {
+			printf("Exit status: %d", *(int*)retval);
+		}
+		printf(")\n");
+	}
 }

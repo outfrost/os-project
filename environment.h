@@ -21,5 +21,6 @@ sem_t recycled_materials;
 sem_t ui_update;
 
 void start_environment();
+void terminate_environment();
 
 #endif

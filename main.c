@@ -12,6 +12,7 @@ int main(int argc, char** argv) {
 	pthread_exit(NULL);
 	*/
 	pthread_join(ui_thread, NULL);
+	terminate_environment();
 	
 	return 0;
 }
