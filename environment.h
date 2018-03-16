@@ -1,5 +1,5 @@
-#ifndef ENVIRONMENT_H
-#define ENVIRONMENT_H
+#ifndef ENVIRONMENT_H_
+#define ENVIRONMENT_H_
 
 /* const int SUPPLIERS_COUNT */
 #define SUPPLIERS_COUNT 5
@@ -22,5 +22,10 @@ sem_t ui_update;
 
 void start_environment();
 void terminate_environment();
+void init_semaphores();
+void destroy_semaphores();
+void spawn_workers();
+void terminate_workers();
+void start_ui(pthread_t* ui_thread);
 
 #endif
