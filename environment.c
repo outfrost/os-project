@@ -7,7 +7,7 @@
 
 #include "worker.h"
 #include "environment.h"
-#include "profanities.h"
+#include "ui.h"
 
 void start_environment(pthread_t* ui_thread) {
 	srandom(time(NULL));

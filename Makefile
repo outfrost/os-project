@@ -18,11 +18,11 @@ init :
 out/main.o : main.c environment.h worker.h
 	cc -c -o out/main.o main.c $(compileargs)
 
-out/environment.o : environment.c environment.h worker.h profanities.h
+out/environment.o : environment.c environment.h worker.h ui.h
 	cc -c -o out/environment.o environment.c $(compileargs)
 
 out/worker.o : worker.c worker.h environment.h
 	cc -c -o out/worker.o worker.c $(compileargs)
 
-out/profanities.o : profanities.c profanities.h environment.h worker.h
-	cc -c -o out/profanities.o profanities.c $(compileargs)
+out/profanities.o : ui.c ui.h environment.h worker.h
+	cc -c -o out/profanities.o ui.c $(compileargs)
