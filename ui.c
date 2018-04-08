@@ -1,17 +1,19 @@
 #include <stdlib.h>
 #include <ncurses.h>
 #include <semaphore.h>
+#include <signal.h>
 
 #include "worker.h"
 #include "environment.h"
+#include "signalhandler.h"
 #include "ui.h"
 
-static int item_count_length;
+static UiPositioning ui_positioning;
 
 void* ui_run(void* arg) {
+	ui_positioning.item_count_length = snprintf(NULL, 0, "%u", INITIAL_ITEMS);
 	start_curses();
-	
-	item_count_length = snprintf(NULL, 0, "%u", INITIAL_ITEMS);
+	update_ui_positioning();
 	
 	while (1) {
 		sem_wait(&ui_update);
@@ -34,6 +36,8 @@ void start_curses() {
 	noecho();
 	curs_set(0);
 	nodelay(stdscr, true);
+	
+	init_signalhandler();
 }
 
 void terminate_curses() {
@@ -43,55 +47,35 @@ void terminate_curses() {
 void draw_ui() {
 	erase();
 	
-	int rows;
-	int columns;
-	getmaxyx(stdscr, rows, columns);
-	
-	mvprintw(rows - 1, 1, "q - quit");
-	
-	int goods_pile_row = (rows >> 1) - 3;
-	int materials_pile_row = (rows >> 1) + 2;
-	
-	int piles_start_column = ((columns - item_count_length) >> 1);
-	
-	int suppliers_top_row = ((rows - SUPPLIERS_COUNT) >> 1);
-	int consumers_top_row = ((rows - CONSUMERS_COUNT) >> 1);
-	
-	int suppliers_interaction_column = piles_start_column - 3;
-	int suppliers_idle_column = suppliers_interaction_column - 4;
-	int suppliers_proc_column = suppliers_idle_column - 4;
-	
-	int consumers_interaction_column = piles_start_column + item_count_length + 1;
-	int consumers_idle_column = consumers_interaction_column + 5;
-	int consumers_proc_column = consumers_idle_column + 3;
+	mvprintw(ui_positioning.rows - 1, 1, "q - quit");
 	
 	for (int i = 0; i < SUPPLIERS_COUNT; ++i) {
 		if (supplier_state[i] == IDLE) {
-			mvprintw(suppliers_top_row + i, suppliers_idle_column, "@");
+			mvprintw(ui_positioning.suppliers_y + i, ui_positioning.suppliers_idle_x, "@");
 		}
 		else if (supplier_state[i] == TAKING_ITEM) {
-			mvprintw(materials_pile_row, suppliers_interaction_column, "@*");
+			mvprintw(ui_positioning.materials_pile_y, ui_positioning.suppliers_interaction_x, "@*");
 		}
 		else if (supplier_state[i] == PROCESSING) {
-			mvprintw(suppliers_top_row + i, suppliers_proc_column, "*@");
+			mvprintw(ui_positioning.suppliers_y + i, ui_positioning.suppliers_proc_x, "*@");
 		}
 		else if (supplier_state[i] == STORING_ITEM) {
-			mvprintw(goods_pile_row, suppliers_interaction_column, "@*");
+			mvprintw(ui_positioning.goods_pile_y, ui_positioning.suppliers_interaction_x, "@*");
 		}
 	}
 	
 	for (int i = 0; i < CONSUMERS_COUNT; ++i) {
 		if (consumer_state[i] == IDLE) {
-			mvprintw(consumers_top_row + i, consumers_idle_column, "@");
+			mvprintw(ui_positioning.consumers_y + i, ui_positioning.consumers_idle_x, "@");
 		}
 		else if (consumer_state[i] == TAKING_ITEM) {
-			mvprintw(goods_pile_row, consumers_interaction_column, "*@");
+			mvprintw(ui_positioning.goods_pile_y, ui_positioning.consumers_interaction_x, "*@");
 		}
 		else if (consumer_state[i] == PROCESSING) {
-			mvprintw(consumers_top_row + i, consumers_proc_column, "@*");
+			mvprintw(ui_positioning.consumers_y + i, ui_positioning.consumers_proc_x, "@*");
 		}
 		else if (consumer_state[i] == STORING_ITEM) {
-			mvprintw(materials_pile_row, consumers_interaction_column, "*@");
+			mvprintw(ui_positioning.materials_pile_y, ui_positioning.consumers_interaction_x, "*@");
 		}
 	}
 	
@@ -100,8 +84,28 @@ void draw_ui() {
 	sem_getvalue(&stored_goods, &goods);
 	sem_getvalue(&recycled_materials, &materials);
 	
-	mvprintw(goods_pile_row, piles_start_column, "%*d", item_count_length, goods);
-	mvprintw(materials_pile_row, piles_start_column, "%*d", item_count_length, materials);
+	mvprintw(ui_positioning.goods_pile_y, ui_positioning.piles_x, "%*d", ui_positioning.item_count_length, goods);
+	mvprintw(ui_positioning.materials_pile_y, ui_positioning.piles_x, "%*d", ui_positioning.item_count_length, materials);
 	
 	refresh();
+}
+
+void update_ui_positioning() {
+	getmaxyx(stdscr, ui_positioning.rows, ui_positioning.columns);
+	
+	ui_positioning.goods_pile_y = (ui_positioning.rows >> 1) - 3;
+	ui_positioning.materials_pile_y = (ui_positioning.rows >> 1) + 2;
+	
+	ui_positioning.piles_x = ((ui_positioning.columns - ui_positioning.item_count_length) >> 1);
+	
+	ui_positioning.suppliers_y = ((ui_positioning.rows - SUPPLIERS_COUNT) >> 1);
+	ui_positioning.consumers_y = ((ui_positioning.rows - CONSUMERS_COUNT) >> 1);
+	
+	ui_positioning.suppliers_interaction_x = ui_positioning.piles_x - 3;
+	ui_positioning.suppliers_idle_x = ui_positioning.suppliers_interaction_x - 4;
+	ui_positioning.suppliers_proc_x = ui_positioning.suppliers_idle_x - 4;
+	
+	ui_positioning.consumers_interaction_x = ui_positioning.piles_x + ui_positioning.item_count_length + 1;
+	ui_positioning.consumers_idle_x = ui_positioning.consumers_interaction_x + 5;
+	ui_positioning.consumers_proc_x = ui_positioning.consumers_idle_x + 3;
 }

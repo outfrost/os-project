@@ -1,6 +1,7 @@
 compileargs = -Wall -Wextra -Wpedantic
 linkargs = -pthread -lncurses
-objects = out/main.o out/environment.o out/worker.o out/ui.o
+objects = out/main.o out/environment.o out/worker.o out/ui.o \
+		  out/signalhandler.o
 
 out/threading : $(objects)
 	@echo "###### Linking executable..."
@@ -24,5 +25,8 @@ out/environment.o : environment.c environment.h worker.h ui.h
 out/worker.o : worker.c worker.h environment.h
 	cc -c -o out/worker.o worker.c $(compileargs)
 
-out/ui.o : ui.c ui.h environment.h worker.h
+out/ui.o : ui.c ui.h signalhandler.h environment.h worker.h
 	cc -c -o out/ui.o ui.c $(compileargs)
+
+out/signalhandler.o : signalhandler.c signalhandler.h ui.h
+	cc -c -o out/signalhandler.o signalhandler.c $(compileargs)
