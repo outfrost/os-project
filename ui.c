@@ -109,3 +109,10 @@ void update_ui_positioning() {
 	ui_positioning.consumers_idle_x = ui_positioning.consumers_interaction_x + 5;
 	ui_positioning.consumers_proc_x = ui_positioning.consumers_idle_x + 3;
 }
+
+void terminal_size_changed() {
+	endwin();
+	refresh();
+	update_ui_positioning();
+	sem_post(&ui_update);
+}

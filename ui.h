@@ -6,6 +6,7 @@ void start_curses();
 void terminate_curses();
 void draw_ui();
 void update_ui_positioning();
+void terminal_size_changed();
 
 typedef struct {
 	int item_count_length;

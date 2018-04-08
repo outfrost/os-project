@@ -14,6 +14,6 @@ void init_signalhandler() {
 
 void handle_signal(int signum) {
 	if (signum == SIGWINCH) {
-		update_ui_positioning();
+		terminal_size_changed();
 	}
 }
