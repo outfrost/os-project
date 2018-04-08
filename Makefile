@@ -13,7 +13,9 @@ run : out/threading
 	@echo
 	out/threading
 
-init :
+init : out/
+
+out/ :
 	mkdir out/
 
 out/main.o : main.c environment.h worker.h
