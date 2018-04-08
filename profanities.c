@@ -8,7 +8,7 @@
 
 static int item_count_length;
 
-void* profanities_run(void* arg) {
+void* ui_run(void* arg) {
 	start_curses();
 	
 	item_count_length = snprintf(NULL, 0, "%u", INITIAL_ITEMS);

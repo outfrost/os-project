@@ -108,7 +108,7 @@ void terminate_workers() {
 }
 
 void start_ui(pthread_t* ui_thread) {
-	int create_status = pthread_create(ui_thread, NULL, profanities_run, NULL);
+	int create_status = pthread_create(ui_thread, NULL, ui_run, NULL);
 	if (create_status != 0) {
 		if (create_status == EAGAIN) {
 			fprintf(stderr, "Cannot start profanities: Cannot allocate resources for thread\n");
