@@ -15,19 +15,18 @@ void* ui_run(void* arg) {
 	start_curses();
 	update_ui_positioning();
 	
-	while (1) {
-		sem_wait(&ui_update);
-		
-		draw_ui();
-		
-		if (getch() == 'q') {
-			terminate_curses();
-			
-			int* result = malloc(sizeof(int));
-			*result = 0;
-			return (void*)result;
+	while (getch() != 'q') {
+		int semaphore_result = sem_trywait(&ui_update);
+		if (semaphore_result == 0) {
+			draw_ui();
 		}
 	}
+	
+	terminate_curses();
+	
+	int* result = malloc(sizeof(int));
+	*result = 0;
+	return (void*)result;
 }
 
 void start_curses() {
