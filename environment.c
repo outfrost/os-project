@@ -111,10 +111,10 @@ void start_ui(pthread_t* ui_thread) {
 	int create_status = pthread_create(ui_thread, NULL, ui_run, NULL);
 	if (create_status != 0) {
 		if (create_status == EAGAIN) {
-			fprintf(stderr, "Cannot start profanities: Cannot allocate resources for thread\n");
+			fprintf(stderr, "Cannot start UI: Cannot allocate resources for thread\n");
 		}
 		else if (create_status == EINVAL || create_status == EPERM) {
-			fprintf(stderr, "Cannot start profanities: Invalid or forbidden thread creation attributes\n");
+			fprintf(stderr, "Cannot start UI: Invalid or forbidden thread creation attributes\n");
 		}
 	}
 }
