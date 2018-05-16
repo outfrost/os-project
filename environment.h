@@ -5,12 +5,10 @@
 #define SUPPLIERS_COUNT 5
 /* const int CONSUMERS_COUNT */
 #define CONSUMERS_COUNT 5
+/* const int WORKERS_COUNT */
+#define WORKERS_COUNT (SUPPLIERS_COUNT + CONSUMERS_COUNT)
 
-pthread_t suppliers[SUPPLIERS_COUNT];
-pthread_t consumers[CONSUMERS_COUNT];
-
-WorkerState supplier_state[SUPPLIERS_COUNT];
-WorkerState consumer_state[CONSUMERS_COUNT];
+Worker workers[WORKERS_COUNT];
 
 /* const unsigned int INITIAL_ITEMS */
 #define INITIAL_ITEMS 10u

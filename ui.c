@@ -48,32 +48,38 @@ void draw_ui() {
 	
 	mvprintw(ui_positioning.rows - 1, 1, "q - quit");
 	
+	int supplier_row = ui_positioning.suppliers_y;
+	int consumer_row = ui_positioning.consumers_y;
+	for (int i = 0; i < WORKERS_COUNT; ++i) {
+		if ()
+	}
+	
 	for (int i = 0; i < SUPPLIERS_COUNT; ++i) {
-		if (supplier_state[i] == IDLE) {
+		if (supplier_state[i] == WORKER_IDLE) {
 			mvprintw(ui_positioning.suppliers_y + i, ui_positioning.suppliers_idle_x, "@");
 		}
-		else if (supplier_state[i] == TAKING_ITEM) {
+		else if (supplier_state[i] == WORKER_TAKING_ITEM) {
 			mvprintw(ui_positioning.materials_pile_y, ui_positioning.suppliers_interaction_x, "@*");
 		}
-		else if (supplier_state[i] == PROCESSING) {
+		else if (supplier_state[i] == WORKER_PROCESSING) {
 			mvprintw(ui_positioning.suppliers_y + i, ui_positioning.suppliers_proc_x, "*@");
 		}
-		else if (supplier_state[i] == STORING_ITEM) {
+		else if (supplier_state[i] == WORKER_STORING_ITEM) {
 			mvprintw(ui_positioning.goods_pile_y, ui_positioning.suppliers_interaction_x, "@*");
 		}
 	}
 	
 	for (int i = 0; i < CONSUMERS_COUNT; ++i) {
-		if (consumer_state[i] == IDLE) {
+		if (consumer_state[i] == WORKER_IDLE) {
 			mvprintw(ui_positioning.consumers_y + i, ui_positioning.consumers_idle_x, "@");
 		}
-		else if (consumer_state[i] == TAKING_ITEM) {
+		else if (consumer_state[i] == WORKER_TAKING_ITEM) {
 			mvprintw(ui_positioning.goods_pile_y, ui_positioning.consumers_interaction_x, "*@");
 		}
-		else if (consumer_state[i] == PROCESSING) {
+		else if (consumer_state[i] == WORKER_PROCESSING) {
 			mvprintw(ui_positioning.consumers_y + i, ui_positioning.consumers_proc_x, "@*");
 		}
-		else if (consumer_state[i] == STORING_ITEM) {
+		else if (consumer_state[i] == WORKER_STORING_ITEM) {
 			mvprintw(ui_positioning.materials_pile_y, ui_positioning.consumers_interaction_x, "*@");
 		}
 	}

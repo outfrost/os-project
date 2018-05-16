@@ -6,8 +6,8 @@
 #include <stdio.h>
 
 #include "worker.h"
-#include "environment.h"
 #include "ui.h"
+#include "environment.h"
 
 void start_environment(pthread_t* ui_thread) {
 	srandom(time(NULL));
@@ -35,68 +35,44 @@ void destroy_semaphores() {
 }
 
 void spawn_workers() {
-	for (int i = 0; i < SUPPLIERS_COUNT; ++i) {
-		Worker* worker = malloc(sizeof(Worker));
-		(*worker).type = SUPPLIER;
-		(*worker).id = i;
-		int create_status = pthread_create(&suppliers[i], NULL, worker_run, (void*)worker);
+	for (int i = 0; i < WORKERS_COUNT; ++i) {
+		workers[i].id = i;
+		if (i < SUPPLIERS_COUNT) {
+			workers[i].type = SUPPLIER;
+		}
+		else {
+			workers[i].type = CONSUMER;
+		}
+		
+		int create_status = pthread_create(&workers[i].thread, NULL, worker_run, (void*)&workers[i]);
 		if (create_status != 0) {
+			fprintf(stderr, "Cannot spawn %s %d: ", worker_type_name(workers[i].type), i);
 			if (create_status == EAGAIN) {
-				fprintf(stderr, "Cannot spawn supplier %d: Cannot allocate resources for thread\n", i);
+				fprintf(stderr, "Cannot allocate resources for thread\n");
 			}
 			else if (create_status == EINVAL || create_status == EPERM) {
-				fprintf(stderr, "Cannot spawn supplier %d: Invalid or forbidden thread creation attributes\n", i);
+				fprintf(stderr, "Invalid or forbidden thread creation attributes\n");
+			}
+			else {
+				fprintf(stderr, "Unknown error (%d)\n", create_status);
 			}
 		}
 		else {
-			printf("Supplier %d spawned\n", i);
-		}
-	}
-	
-	for (int i = 0; i < CONSUMERS_COUNT; ++i) {
-		Worker* worker = malloc(sizeof(Worker));
-		(*worker).type = CONSUMER;
-		(*worker).id = i;
-		int create_status = pthread_create(&consumers[i], NULL, worker_run, (void*)worker);
-		if (create_status != 0) {
-			if (create_status == EAGAIN) {
-				fprintf(stderr, "Cannot spawn consumer %d: Cannot allocate resources for thread\n", i);
-			}
-			else if (create_status == EINVAL || create_status == EPERM) {
-				fprintf(stderr, "Cannot spawn consumer %d: Invalid or forbidden thread creation attributes\n", i);
-			}
-		}
-		else {
-			printf("Consumer %d spawned\n", i);
+			printf("%s %d spawned\n", worker_type_name(workers[i].type), i);
 		}
 	}
 }
 
 void terminate_workers() {
-	for (int i = 0; i < SUPPLIERS_COUNT; ++i) {
-		pthread_cancel(suppliers[i]);
-	}
-	for (int i = 0; i < CONSUMERS_COUNT; ++i) {
-		pthread_cancel(consumers[i]);
+	for (int i = 0; i < WORKERS_COUNT; ++i) {
+		pthread_cancel(workers[i].thread);
 	}
 	
-	for (int i = 0; i < SUPPLIERS_COUNT; ++i) {
+	for (int i = 0; i < WORKERS_COUNT; ++i) {
 		void* retval = NULL;
-		pthread_join(suppliers[i], &retval);
-		printf("Supplier %d terminated (", i);
-		if (retval == PTHREAD_CANCELED) {
-			printf("Thread canceled");
-		}
-		else {
-			printf("Exit status: %d", *(int*)retval);
-		}
-		printf(")\n");
-	}
-	
-	for (int i = 0; i < CONSUMERS_COUNT; ++i) {
-		void* retval = NULL;
-		pthread_join(consumers[i], &retval);
-		printf("Consumer %d terminated (", i);
+		pthread_join(workers[i].thread, &retval);
+		
+		printf("%s %d terminated (", worker_type_name(workers[i].type), i);
 		if (retval == PTHREAD_CANCELED) {
 			printf("Thread canceled");
 		}
@@ -110,11 +86,15 @@ void terminate_workers() {
 void start_ui(pthread_t* ui_thread) {
 	int create_status = pthread_create(ui_thread, NULL, ui_run, NULL);
 	if (create_status != 0) {
+		fprintf(stderr, "Cannot start UI: ");
 		if (create_status == EAGAIN) {
-			fprintf(stderr, "Cannot start UI: Cannot allocate resources for thread\n");
+			fprintf(stderr, "Cannot allocate resources for thread\n");
 		}
 		else if (create_status == EINVAL || create_status == EPERM) {
-			fprintf(stderr, "Cannot start UI: Invalid or forbidden thread creation attributes\n");
+			fprintf(stderr, "Invalid or forbidden thread creation attributes\n");
+		}
+		else {
+			fprintf(stderr, "Unknown error (%d)\n", create_status);
 		}
 	}
 }
